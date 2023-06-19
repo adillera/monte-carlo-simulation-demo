@@ -13,15 +13,18 @@ class Simulator
   end
 
   def simulate
+    progress_bar = []
     forecasts = {}
     round_ctr = 0
 
     while round_ctr != @total_runs
-      puts "We at #{ round_ctr } round" if round_ctr % 100000 == 0
+      if round_ctr % 100000 == 0
+        progress_bar << "="
+
+        puts progress_bar.to_s
+      end
 
       current_date = @start_date
-      forecasts[current_date.to_s] = 0 if forecasts[current_date.to_s].nil?
-
       delivery_date = run_randomizer(current_date, forecasts)
 
       forecasts[delivery_date.to_s] += 1
@@ -39,18 +42,24 @@ class Simulator
     delivered_tickets = 0
 
     while delivered_tickets < @target_tickets
-      t_done = throughput[rand(0..@t_len)]
-      h_done = hotfix[rand(0..@h_len)]
+      unless current_date.saturday? || current_date.sunday?
+        forecasts[current_date.to_s] = 0 if forecasts[current_date.to_s].nil?
 
-      if t_done < h_done
-        delivered_tickets += 0
-      else
-        delivered_tickets += t_done - h_done
+        t_done = throughput[rand(0..@t_len)]
+        h_done = hotfix[rand(0..@h_len)]
+
+        if t_done < h_done
+          delivered_tickets += 0
+        else
+          delivered_tickets += t_done - h_done
+        end
       end
 
-      current_date = current_date.next_day(1)
-
-      forecasts[current_date.to_s] = 0 if forecasts[current_date.to_s].nil?
+      if delivered_tickets < @target_tickets
+        current_date = current_date.next_day(1)
+      else
+        current_date = current_date
+      end
     end
 
     current_date
