@@ -4,9 +4,10 @@ require './team_data.rb'
 include TeamData
 
 class Simulator
-  def initialize(target_tickets, start_date, run_time = 1000000)
+  def initialize(target_tickets, start_date, vacation_days, run_time = 1000000)
     @total_runs = run_time
     @start_date = start_date
+    @vacation_days = vacation_days
     @target_tickets = target_tickets
     @t_len = throughput.size - 1
     @h_len = hotfix.size - 1
@@ -42,7 +43,7 @@ class Simulator
     delivered_tickets = 0
 
     while delivered_tickets < @target_tickets
-      unless current_date.saturday? || current_date.sunday?
+      unless current_date.saturday? || current_date.sunday? || @vacation_days.include?(current_date)
         forecasts[current_date.to_s] = 0 if forecasts[current_date.to_s].nil?
 
         t_done = throughput[rand(0..@t_len)]
